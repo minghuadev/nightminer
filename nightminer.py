@@ -757,6 +757,8 @@ class Miner(SimpleJsonRpcClient):
       # ...authorize; if we failed to authorize, quit
       elif request.get('method') == 'mining.authorize':
         if 'result' not in reply or not reply['result']:
+          log('Authorized FAIL', LEVEL_DEBUG)
+          return
           raise self.MinerAuthenticationException('Failed to authenticate worker', reply, request)
 
         worker_name = request['params'][0]
