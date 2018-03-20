@@ -465,6 +465,7 @@ class Job(object):
                 self.ser.write(payload)
 
                 while True:
+                    print('#', end='')
                     if self._done:
                         self._dt += (time.time() - t0)
                         raise StopIteration()
@@ -472,7 +473,7 @@ class Job(object):
                     nounce_bin = nounce_read
                     if len(nounce_read) == 8:
                         v = nounce_read.encode('hex')
-                        print "Cluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] )
+                        print "\nCluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] )
                         result = dict(
                             job_id = self.id,
                             extranounce2 = hexlify(extranounce2_bin),
