@@ -384,7 +384,7 @@ class Job(object):
 
     def init_fpga( self ):
         from serial import Serial
-        self.ser = Serial(serial_port, 115200, timeout=2)
+        self.ser = Serial('COM3', 115200, timeout=2)
         resp = self.ser.read(1000)
         while len( resp ) > 0:
             print ".",
@@ -460,14 +460,16 @@ class Job(object):
             #print '##', header_prefix_bin.encode('hex'), self.target
 
             if self.fpga:
-                payload = self.target.decode('hex') + header_prefix_bin
+                nounce_bin = struct.pack('<I', nounce_start)
+                payload = self.target.decode('hex') + header_prefix_bin + nounce_bin
                 self.ser.write(payload)
 
                 while True:
                     if self._done:
                         self._dt += (time.time() - t0)
                         raise StopIteration()
-                    nounce_read = ser.read(8)
+                    nounce_read = self.ser.read(8)
+                    nounce_bin = nounce_read
                     if len(nounce_read) == 8:
                         v = nounce_read.encode('hex')
                         print "Cluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] )
