@@ -461,8 +461,14 @@ class Job(object):
 
             if self.fpga:
                 nounce_bin = struct.pack('<I', nounce_start)
-                payload = self.target.decode('hex') + header_prefix_bin + nounce_bin
-                self.ser.write(payload)
+                b = header_prefix_bin + nounce_bin[:4] 
+                o = ''
+                print '$$b', len(b)
+                for p in range( 0, len(b), 4 ):
+                    o += b[p+3:p+4] + b[p+2:p+3] + b[p+1:p+2] + b[p:p+1]
+                payload = self.target.decode('hex') + o 
+                print '$$p', len(payload)
+                self.ser.write(payload[::-1])
 
                 while True:
                     print '#'
