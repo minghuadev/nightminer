@@ -53,7 +53,7 @@ ALGORITHM_SHA256D         = 'sha256d'
 
 ALGORITHMS = [ ALGORITHM_SCRYPT, ALGORITHM_SHA256D ]
 
-FPGA = False 
+FPGA = True
 
 
 # Verbosity and log level
@@ -384,7 +384,7 @@ class Job(object):
 
     def init_fpga( self ):
         from serial import Serial
-        self.ser = Serial('COM3', 115200, timeout=2)
+        self.ser = Serial('COM7', 115200, timeout=2)
         resp = self.ser.read(1000)
         while len( resp ) > 0:
             print ".",
@@ -465,14 +465,15 @@ class Job(object):
                 self.ser.write(payload)
 
                 while True:
-                    print('#', end='')
+                    print '#'
                     if self._done:
                         self._dt += (time.time() - t0)
                         raise StopIteration()
                     nounce_read = self.ser.read(8)
-                    nounce_bin = nounce_read
+                    
                     if len(nounce_read) == 8:
                         v = nounce_read.encode('hex')
+                        nounce_bin = v[:8].decode('hex')
                         print "\nCluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] )
                         result = dict(
                             job_id = self.id,
