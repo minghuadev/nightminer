@@ -53,7 +53,7 @@ ALGORITHM_SHA256D         = 'sha256d'
 
 ALGORITHMS = [ ALGORITHM_SCRYPT, ALGORITHM_SHA256D ]
 
-FPGA = False
+FPGA = False 
 
 
 # Verbosity and log level
@@ -456,16 +456,11 @@ class Job(object):
 
             merkle_root_bin = self.merkle_root_bin(extranounce2_bin)
             header_prefix_bin = swap_endian_word(self._version) + swap_endian_words(self._prevhash) + merkle_root_bin + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
+            #print '%%', len(self.target), len(merkle_root_bin), len(header_prefix_bin)
+            #print '##', header_prefix_bin.encode('hex'), self.target
 
             if self.fpga:
-                b = header_prefix_bin[:160]
-                t = '0' * 56 + self.target[56:64]
-                o = ''
-                for p in range( 0, len(b), 8 ):
-                    o += b[p+6:p+8] + b[p+4:p+6] + b[p+2:p+4] + b[p:p+2]
-
-                payload = self.target + o
-                payload = payload.decode('hex')[::-1]
+                payload = self.target.decode('hex') + header_prefix_bin
                 self.ser.write(payload)
 
                 while True:
@@ -489,12 +484,7 @@ class Job(object):
                         t0 = time.time()
                         break
                     self._hash_count += 1
-
-
-
-
-
-
+                return
 
             for nounce in xrange(nounce_start, 0x7fffffff, nounce_stride):
                 # This job has been asked to stop
