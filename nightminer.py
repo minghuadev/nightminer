@@ -311,8 +311,12 @@ def set_scrypt_library(library = SCRYPT_LIBRARY_AUTO):
 
     global SCRYPT_LIBRARY
     global scrypt_proof_of_work
+    global FPGA
 
-    if library == SCRYPT_LIBRARY_LTC:
+    if FPGA:
+        scrypt_proof_of_work = None 
+        SCRYPT_LIBRARY = library
+    elif library == SCRYPT_LIBRARY_LTC:
         import ltc_scrypt
         scrypt_proof_of_work = ltc_scrypt.getPoWHash
         SCRYPT_LIBRARY = library
