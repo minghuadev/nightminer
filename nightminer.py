@@ -490,7 +490,7 @@ class Job(object):
                             job_id = self.id,
                             extranounce2 = hexlify(extranounce2_bin),
                             ntime = str(self._ntime),                                        # Convert to str from json unicode
-                            nounce = hexlify(nounce_bin[::-1])
+                            nounce = hexlify(nounce_read[:4:-1].encode('hex'))
                         )
                         self._dt += (time.time() - t0)
 
