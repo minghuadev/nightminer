@@ -455,12 +455,13 @@ class Job(object):
             extranounce2_bin = struct.pack('<I', extranounce2)
 
             merkle_root_bin = self.merkle_root_bin(extranounce2_bin)
-            #header_prefix_bin = swap_endian_word(self._version) + swap_endian_words(self._prevhash) + merkle_root_bin + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
-            header_prefix_bin = swap_endian_word(self._version) + self._prevhash.decode('hex')[::-1] + merkle_root_bin + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
+            header_prefix_bin = swap_endian_word(self._version) + swap_endian_words(self._prevhash) + merkle_root_bin + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
             #print '%%', len(self.target), len(merkle_root_bin), len(header_prefix_bin)
             #print '##', header_prefix_bin.encode('hex'), self.target
 
             if self.fpga:
+                merkle_root_bin = self.merkle_root_bin(extranounce2_bin)
+                header_prefix_bin = swap_endian_word(self._version) + self._prevhash.decode('hex')[::-1] + merkle_root_bin[::-1] + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
                 nounce_bin = struct.pack('<I', nounce_start)
                 b = header_prefix_bin + nounce_bin
                 o = ''
