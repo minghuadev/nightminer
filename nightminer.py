@@ -484,7 +484,7 @@ class Job(object):
                     
                     if len(nounce_read) == 8:
                         v = nounce_read.encode('hex')
-                        nounce_bin = nounce_read[:4:-1]
+                        nounce_bin = nounce_read[:4:-1].encode('hex')
                         print "\nCluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] )
                         result = dict(
                             job_id = self.id,
