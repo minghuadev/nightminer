@@ -461,7 +461,7 @@ class Job(object):
 
             if self.fpga:
                 nounce_bin = struct.pack('<I', nounce_start)
-                b = header_prefix_bin + swap_endian_word(struct.pack('<I', nounce_bin))
+                b = header_prefix_bin + nounce_bin[3::-1] 
                 o = ''
                 print '$$b', len(b)
                 for p in range( 0, len(b), 4 ):
