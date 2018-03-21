@@ -465,6 +465,7 @@ class Job(object):
                 o = ''
                 print '$$b', len(b)
                 print '$$n', nounce_bin.encode('hex')
+                print '$$t', self.target 
                 #for p in range( 0, len(b), 4 ):
                 #    o += b[p+3] + b[p+2] + b[p+1] + b[p]
                 payload = swap_endian_words(self.target) + b 
