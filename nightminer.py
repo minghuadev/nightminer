@@ -468,7 +468,7 @@ class Job(object):
                 print '$$t', self.target 
                 #for p in range( 0, len(b), 4 ):
                 #    o += b[p+3] + b[p+2] + b[p+1] + b[p]
-                payload = self.target[::-1] + b 
+                payload = self.target.decode('hex')[::-1] + b 
                 print '$$p', len(payload)
                 print '@@', payload.encode('hex')
                 self.ser.write(payload[::-1])
