@@ -465,8 +465,8 @@ class Job(object):
                 o = ''
                 print '$$b', len(b)
                 print '$$n', nounce_bin.encode('hex')
-                for p in range( 0, len(b), 4 ):
-                    o += b[p+3] + b[p+2] + b[p+1] + b[p]
+                #for p in range( 0, len(b), 4 ):
+                #    o += b[p+3] + b[p+2] + b[p+1] + b[p]
                 payload = self.target.decode('hex') + o 
                 print '$$p', len(payload)
                 print '@@', payload.encode('hex')
