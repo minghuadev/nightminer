@@ -484,13 +484,13 @@ class Job(object):
                     
                     if len(nounce_read) == 8:
                         v = nounce_read.encode('hex')
-                        nounce_bin = nounce_read[:4:-1].decode('hex')
+                        nounce_bin = v[:8].decode('hex')
                         print "\nCluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] )
                         result = dict(
                             job_id = self.id,
                             extranounce2 = hexlify(extranounce2_bin),
                             ntime = str(self._ntime),                                        # Convert to str from json unicode
-                            nounce = hexlify(nounce_bin)
+                            nounce = hexlify(nounce_bin[::-1])
                         )
                         self._dt += (time.time() - t0)
 
