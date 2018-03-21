@@ -463,7 +463,7 @@ class Job(object):
                 merkle_root_bin = self.merkle_root_bin(extranounce2_bin)
                 header_prefix_bin = swap_endian_word(self._version) + self._prevhash.decode('hex')[::-1] + merkle_root_bin[::-1] + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
                 nounce_bin = struct.pack('<I', nounce_start)
-                b = header_prefix_bin + nounce_bin
+                b = header_prefix_bin + nounce_bin[::-1]
                 o = ''
                 print '$$b', len(b)
                 print '$$n', nounce_bin.encode('hex')
