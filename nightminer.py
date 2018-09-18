@@ -38,7 +38,7 @@
 #   Scrypt Algorithm        - http://www.tarsnap.com/scrypt/scrypt.pdf
 #   Scrypt Implementation   - https://code.google.com/p/scrypt/source/browse/trunk/lib/crypto/crypto_scrypt-ref.c
 
-import base64, binascii, json, hashlib, hmac, math, socket, struct, sys, threading, time, urlparse
+import base64, binascii, json, hashlib, hmac, math, socket, struct, sys, threading, time, urllib.parse 
 
 # DayMiner (ah-ah-ah), fighter of the...
 USER_AGENT = "NightMiner"
@@ -152,14 +152,14 @@ def scrypt(password, salt, N, r, p, dkLen):
   def array_overwrite(source, source_start, dest, dest_start, length):
     '''Overwrites the dest array with the source array.'''
 
-    for i in xrange(0, length):
+    for i in range(0, length):
       dest[dest_start + i] = source[source_start + i]
 
 
   def blockxor(source, source_start, dest, dest_start, length):
     '''Performs xor on arrays source and dest, storing the result back in dest.'''
 
-    for i in xrange(0, length):
+    for i in range(0, length):
       dest[dest_start + i] = chr(ord(dest[dest_start + i]) ^ ord(source[source_start + i]))
 
 
@@ -177,7 +177,7 @@ def scrypt(password, salt, N, r, p, dkLen):
       # Not used for scrpyt-based coins, could be removed, but part of a more general solution
       if count > 1:
         U = [ c for c in U ]
-        for i in xrange(2, 1 + count):
+        for i in range(2, 1 + count):
           blockxor(prf(passphrase, ''.join(U)), 0, U, 0, len(U))
         U = ''.join(U)
 
@@ -225,11 +225,11 @@ def scrypt(password, salt, N, r, p, dkLen):
     '''Salsa 20/8 stream cypher; Used by BlockMix. See http://en.wikipedia.org/wiki/Salsa20'''
 
     # Convert the character array into an int32 array
-    B32 = [ make_int32((ord(B[i * 4]) | (ord(B[i * 4 + 1]) << 8) | (ord(B[i * 4 + 2]) << 16) | (ord(B[i * 4 + 3]) << 24))) for i in xrange(0, 16) ]
+    B32 = [ make_int32((ord(B[i * 4]) | (ord(B[i * 4 + 1]) << 8) | (ord(B[i * 4 + 2]) << 16) | (ord(B[i * 4 + 3]) << 24))) for i in range(0, 16) ]
     x = [ i for i in B32 ]
 
     # Salsa... Time to dance.
-    for i in xrange(8, 0, -2):
+    for i in range(8, 0, -2):
       R(x, 4, 0, 12, 7);   R(x, 8, 4, 0, 9);    R(x, 12, 8, 4, 13);   R(x, 0, 12, 8, 18)
       R(x, 9, 5, 1, 7);    R(x, 13, 9, 5, 9);   R(x, 1, 13, 9, 13);   R(x, 5, 1, 13, 18)
       R(x, 14, 10, 6, 7);  R(x, 2, 14, 10, 9);  R(x, 6, 2, 14, 13);   R(x, 10, 6, 2, 18)
@@ -240,10 +240,10 @@ def scrypt(password, salt, N, r, p, dkLen):
       R(x, 12, 15, 14, 7); R(x, 13, 12, 15, 9); R(x, 14, 13, 12, 13); R(x, 15, 14, 13, 18)
 
     # Coerce into nice happy 32-bit integers
-    B32 = [ make_int32(x[i] + B32[i]) for i in xrange(0, 16) ]
+    B32 = [ make_int32(x[i] + B32[i]) for i in range(0, 16) ]
 
     # Convert back to bytes
-    for i in xrange(0, 16):
+    for i in range(0, 16):
       B[i * 4 + 0] = chr((B32[i] >> 0) & 0xff)
       B[i * 4 + 1] = chr((B32[i] >> 8) & 0xff)
       B[i * 4 + 2] = chr((B32[i] >> 16) & 0xff)
@@ -254,17 +254,17 @@ def scrypt(password, salt, N, r, p, dkLen):
     '''Blockmix; Used by SMix.'''
 
     start = Bi + (2 * r - 1) * 64
-    X = [ BY[i] for i in xrange(start, start + 64) ]                   # BlockMix - 1
+    X = [ BY[i] for i in range(start, start + 64) ]                   # BlockMix - 1
 
-    for i in xrange(0, 2 * r):                                         # BlockMix - 2
+    for i in range(0, 2 * r):                                         # BlockMix - 2
       blockxor(BY, i * 64, X, 0, 64)                                   # BlockMix - 3(inner)
       salsa20_8(X)                                                     # BlockMix - 3(outer)
       array_overwrite(X, 0, BY, Yi + (i * 64), 64)                     # BlockMix - 4
 
-    for i in xrange(0, r):                                             # BlockMix - 6 (and below)
+    for i in range(0, r):                                             # BlockMix - 6 (and below)
       array_overwrite(BY, Yi + (i * 2) * 64, BY, Bi + (i * 64), 64)
 
-    for i in xrange(0, r):
+    for i in range(0, r):
       array_overwrite(BY, Yi + (i * 2 + 1) * 64, BY, Bi + (i + r) * 64, 64)
 
 
@@ -273,11 +273,11 @@ def scrypt(password, salt, N, r, p, dkLen):
 
     array_overwrite(B, Bi, X, 0, 128 * r)               # ROMix - 1
 
-    for i in xrange(0, N):                              # ROMix - 2
+    for i in range(0, N):                              # ROMix - 2
       array_overwrite(X, 0, V, i * (128 * r), 128 * r)  # ROMix - 3
       blockmix_salsa8(X, 0, 128 * r, r)                 # ROMix - 4
 
-    for i in xrange(0, N):                              # ROMix - 6
+    for i in range(0, N):                              # ROMix - 6
       j = integerify(X, 0, r) & (N - 1)                 # ROMix - 7
       blockxor(V, j * (128 * r), X, 0, 128 * r)         # ROMix - 8(inner)
       blockmix_salsa8(X, 0, 128 * r, r)                 # ROMix - 9(outer)
@@ -296,7 +296,7 @@ def scrypt(password, salt, N, r, p, dkLen):
   XY = [ chr(0) ] * (256 * r)
   V  = [ chr(0) ] * (128 * r * N)
 
-  for i in xrange(0, p):
+  for i in range(0, p):
     smix(B, i * 128 * r, r, N, V, XY)
 
   return pbkdf2(password, ''.join(B), 1, dkLen, prf)
@@ -324,10 +324,10 @@ def set_scrypt_library(library = SCRYPT_LIBRARY_AUTO):
   elif library == SCRYPT_LIBRARY_AUTO:
     try:
       set_scrypt_library(SCRYPT_LIBRARY_LTC)
-    except Exception, e:
+    except Exception as e:
       try:
         set_scrypt_library(SCRYPT_LIBRARY_SCRYPT)
-      except Exception, e:
+      except Exception as e:
         set_scrypt_library(SCRYPT_LIBRARY_PYTHON)
 
   else:
@@ -430,14 +430,14 @@ class Job(object):
     t0 = time.time()
 
     # @TODO: test for extranounce != 0... Do I reverse it or not?
-    for extranounce2 in xrange(0, 0x7fffffff):
+    for extranounce2 in range(0, 0x7fffffff):
 
       # Must be unique for any given job id, according to http://mining.bitcoin.cz/stratum-mining/ but never seems enforced?
       extranounce2_bin = struct.pack('<I', extranounce2)
 
       merkle_root_bin = self.merkle_root_bin(extranounce2_bin)
       header_prefix_bin = swap_endian_word(self._version) + swap_endian_words(self._prevhash) + merkle_root_bin + swap_endian_word(self._ntime) + swap_endian_word(self._nbits)
-      for nounce in xrange(nounce_start, 0x7fffffff, nounce_stride):
+      for nounce in range(nounce_start, 0x7fffffff, nounce_stride):
         # This job has been asked to stop
         if self._done:
           self._dt += (time.time() - t0)
@@ -623,7 +623,7 @@ class SimpleJsonRpcClient(object):
         (line, data) = data.split('\n', 1)
       else:
         chunk = self._socket.recv(1024)
-        data += chunk
+        data += chunk.decode()
         continue
 
       log('JSON-RPC Server > ' + line, LEVEL_PROTOCOL)
@@ -631,7 +631,7 @@ class SimpleJsonRpcClient(object):
       # Parse the JSON
       try:
         reply = json.loads(line)
-      except Exception, e:
+      except Exception as e:
         log("JSON-RPC Error: Failed to parse JSON %r (skipping)" % line, LEVEL_ERROR)
         continue
 
@@ -641,7 +641,7 @@ class SimpleJsonRpcClient(object):
           if 'id' in reply and reply['id'] in self._requests:
             request = self._requests[reply['id']]
           self.handle_reply(request = request, reply = reply)
-      except self.RequestReplyWarning, e:
+      except self.RequestReplyWarningas as e:
         output = e.message
         if e.request:
           output += '\n  ' + e.request
@@ -665,7 +665,7 @@ class SimpleJsonRpcClient(object):
     with self._lock:
       self._requests[self._message_id] = request
       self._message_id += 1
-      self._socket.send(message + '\n')
+      self._socket.send((message + '\n').encode())
 
     log('JSON-RPC Server < ' + message, LEVEL_PROTOCOL)
 
@@ -807,7 +807,7 @@ class Miner(SimpleJsonRpcClient):
           self.send(method = 'mining.submit', params = params)
           log("Found share: " + str(params), LEVEL_INFO)
         log("Hashrate: %s" % human_readable_hashrate(job.hashrate), LEVEL_INFO)
-      except Exception, e:
+      except Exception as e:
         log("ERROR: %s" % e, LEVEL_ERROR)
 
     thread = threading.Thread(target = run, args = (self._job, ))
@@ -819,7 +819,7 @@ class Miner(SimpleJsonRpcClient):
     '''Begins the miner. This method does not return.'''
 
     # Figure out the hostname and port
-    url = urlparse.urlparse(self.url)
+    url = urllib.parse.urlparse(self.url)
     hostname = url.hostname or ''
     port = url.port or 9333
 
@@ -918,14 +918,14 @@ if __name__ == '__main__':
     else:
       try:
         (username, password) = options.userpass.split(':')
-      except Exception, e:
+      except Exception as e:
         message = 'Could not parse username:password for -O/--userpass'
 
   # Was there an issue? Show the help screen and exit.
   if message:
     parser.print_help()
     print
-    print message
+    print(message) 
     sys.exit(1)
 
   # Set the logging level
