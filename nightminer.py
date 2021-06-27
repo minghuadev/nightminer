@@ -473,13 +473,13 @@ class Job(object):
                 b = header_prefix_bin + nounce_bin
                 o = ''
                 print('$$b', len(b))
-                print('$$n', encode_hex(nounce_bin)) #nounce_bin.encode('hex'))
+                print('$$n', encode_hex(nounce_bin))[0] #nounce_bin.encode('hex'))
                 print('$$t', self.target)
                 #for p in range( 0, len(b), 4 ):
                 #    o += b[p+3] + b[p+2] + b[p+1] + b[p]
                 payload = self.target.decode('hex')[::-1] + b 
                 print('$$p', len(payload))
-                print('@@', encode_hex(payload)) #payload.encode('hex'))
+                print('@@', encode_hex(payload))[0] #payload.encode('hex'))
                 self.ser.write(payload[::-1])
 
                 while True:
@@ -490,8 +490,8 @@ class Job(object):
                     nounce_read = self.ser.read(8)
                     
                     if len(nounce_read) == 8:
-                        v = encode_hex(nounce_read) #nounce_read.encode('hex')
-                        nounce_bin = decode_hex(v[:8]) # v[:8].decode('hex')
+                        v = encode_hex(nounce_read)[0] #nounce_read.encode('hex')
+                        nounce_bin = decode_hex(v[:8])[0] # v[:8].decode('hex')
                         print("\nCluster/Core: %s/%s found %s" % ( v[14:16], v[12:14], v[:8] ))
                         result = dict(
                             job_id = self.id,
@@ -646,7 +646,7 @@ class SubscriptionScrypt(Subscription):
 class SubscriptionSHA256D(Subscription):
     '''Subscription for Double-SHA256-based coins, like Bitcoin.'''
 
-    ProofOfWork = sha256d
+    ProofOfWork = lambda s,m: (sha256d(m))
 
 
 # Maps algorithms to their respective subscription objects
