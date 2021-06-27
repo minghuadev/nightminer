@@ -268,7 +268,7 @@ class Subscription(object):
     self._target = None
     self._worker_name = None
 
-    self._mining_thread = None
+    #self._mining_thread = None
 
   # Accessors
   id = property(lambda s: s._id)
@@ -386,6 +386,14 @@ class SimpleJsonRpcClient(object):
     self._message_id = 1
     self._requests = dict()
 
+    self._server_asked_reconnect = None
+
+
+  def set_reconnect(self):
+    self._server_asked_reconnect = True
+  def get_reconnect(self):
+    return self._server_asked_reconnect
+
 
   def _handle_incoming_rpc(self):
     data = ""
@@ -394,7 +402,12 @@ class SimpleJsonRpcClient(object):
       if '\n' in data:
         (line, data) = data.split('\n', 1)
       else:
-        chunk = self._socket.recv(1024)
+        chunk = ""
+        try:
+          segment = self._socket.recv(1024)
+          chunk += segment
+        except:
+          break # socket closed. quit the thread.
         data += chunk
         continue
 
@@ -419,6 +432,7 @@ class SimpleJsonRpcClient(object):
           output += '\n  ' + e.request
         output += '\n  ' + str(e.reply)
         log(output, LEVEL_ERROR)
+    sys.exit() # close only the thread.
 
 
   def handle_reply(self, request, reply):
@@ -509,6 +523,13 @@ class Miner(SimpleJsonRpcClient):
 
       log('Change difficulty: difficulty=%s' % difficulty, LEVEL_DEBUG)
 
+    # The server wants us to reconnect after ...
+    elif reply.get('method') == 'client.reconnect':
+      # {u'params': [], u'id': 0, u'method': u'client.reconnect'}
+      self.set_reconnect()
+
+      log('Server requested reconnect ...', LEVEL_INFO)
+
     # This is a reply to...
     elif request:
 
@@ -581,6 +602,7 @@ class Miner(SimpleJsonRpcClient):
         log("Hashrate: %s" % human_readable_hashrate(job.hashrate), LEVEL_INFO)
       except Exception, e:
         log("ERROR: %s" % e, LEVEL_ERROR)
+      sys.exit() # when run in a thread will only close the thread
 
     thread = threading.Thread(target = run, args = (self._job, ))
     thread.daemon = True
@@ -606,6 +628,10 @@ class Miner(SimpleJsonRpcClient):
     # Forever...
     while True:
       time.sleep(10)
+      if self.get_reconnect():
+          time.sleep(1)
+          sock.close()
+          break
 
 
 def test_subscription():
@@ -720,5 +746,7 @@ if __name__ == '__main__':
   
   # Heigh-ho, heigh-ho, it's off to work we go...
   if options.url:
+   while True:
     miner = Miner(options.url, username, password, algorithm = options.algo)
     miner.serve_forever()
+    time.sleep(10)
