@@ -571,7 +571,7 @@ class SubscriptionScrypt(Subscription):
 class SubscriptionSHA256D(Subscription):
   '''Subscription for Double-SHA256-based coins, like Bitcoin.'''
 
-  ProofOfWork = sha256d
+  ProofOfWork = lambda s, m: (sha256d(m))
 
 
 # Maps algorithms to their respective subscription objects
@@ -645,7 +645,7 @@ class SimpleJsonRpcClient(object):
         output = e.message
         if e.request:
           output += '\n  ' + e.request
-        output += '\n  ' + e.reply
+        output += '\n  ' + str(e.reply)
         log(output, LEVEL_ERROR)
 
 
